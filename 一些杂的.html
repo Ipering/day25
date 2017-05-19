@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+	<body>
+		<script type="text/javascript">
+			/*
+			 
+			  jq对象有别于普通的dom对象,jq的方发只能供jq对象使用,同理dom方法只能
+			由dom对象调用,如果相互用各自的方法只能将对象类型转化成对应的方法的类型
+			
+			通过$()获取的是jq对象,jq对象有一个特性,其有下标的概念,我们可以利用这个特性
+			,将jq对象转换成dom对象*/
+			/*
+			 普通的dom对象==>jq对象   $(普通dom对象)
+			 */
+			$("#p1").get(0).style.background="red";
+			$("#p1").[0].style.background="red";
+			/*jq对象==>普通的dom对象*/
+		</script>
+	</body>
+</html>

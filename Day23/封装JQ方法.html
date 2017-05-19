@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>封装JQ方法</title>
+		<style type="text/css">
+		      div {
+		          width: 200px;
+		          height: 200px;
+		          background: red;
+		          margin-top: 10px;
+		      }
+		</style>
+	</head>
+	<body>
+	       <div id="d1" class="d"></div>
+	       <div id="d2" class="d"></div>
+	       <div id="d3" class="d"></div>
+	      <script src="myJQ.js" type="text/javascript" charset="utf-8"></script>
+	     <script type="text/javascript">
+//	     	console.log(deleteSpace("#div1 img"));
+//          var d1 = document.getElementById("d1");
+//          console.log($("div").get(1));
+            $("div").on("click", function(e){
+                alert(1111);
+            });
+	     </script>
+	</body>
+</html>

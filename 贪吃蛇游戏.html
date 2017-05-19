@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0,minimum-scale=0.5, user-scalable=0">
+		<title>贪吃蛇游戏</title>
+		<style type="text/css">
+			h2{
+				text-align: center;
+			}
+			#score{
+				text-align: center;
+				font-size: 26px ;
+			} 
+			#snakeMap{
+				margin: 0 auto;
+				border: 3px solid pink;
+			}
+			.row{
+				height: 20px;
+				/*border: 1px solid orangered;*/
+			}
+			.col{
+				height: 20px;
+				width: 20px;
+				/*使用怪异盒模型*/
+				box-sizing: border-box;
+				border: 1px solid black;
+				float: left;
+			}
+			.activeSnake{
+				background-color: mediumspringgreen;
+			}
+			.food{
+				background-color:green;
+			}
+			
+		</style>
+	</head>
+	<body>
+		<h2>贪吃蛇</h2>
+		<p id="score">0</p>
+		<!--贪吃蛇所走路径地图-->
+		<div id="snakeMap">
+			
+		</div>
+	</body>
+	<script type="text/javascript" src="js/touch-0.2.14.min.js">
+		
+	</script>
+	<script type="text/javascript">
+	    //获取分数对象
+		var score = document.getElementById('score');
+		//获取🐍地图对象
+		var snakeMap = document.getElementById('snakeMap');
+//		为了灵活地设置地图的大小
+//		设置两个变量,分别存储列数和行数(方格的个数)
+      	var rowNumber = 15;//行数
+      	var colNumber = 10;//列数
+      	//设置地图的宽高
+      	snakeMap.style.width = 20 * colNumber + 'px';
+      	snakeMap.style.height = 20 * rowNumber + 'px';
+      	
+      	//二维数组
+//    	var arr1 = [
+//    	[3,'longlong'],
+//    	['王昊',28,true,90],
+//    	[34,90,'s'],
+//    	[45,10,33]
+//    	];
+//    	//如何获取二维数组里的元素
+////    	alert(arr1[2][2]);
+////可以通过for循环遍历得到每一个元素
+//for (var i = 0;i < arr1.length;i++) {
+////	alert(arr1[i]);
+////得到的是二维数组里的元素（一维数组）
+//for (var j = 0;j < arr1[i].length;j++) {
+////	alert(arr1[i][j]);
+//}
+//}
+//创建一个二维数组，用来记录地图上所有的div的位置
+var divsSnake = [];
+//使用二维数组的方式创建地图
+for (var i = 0;i < rowNumber;i++) {
+	//创建行  div
+	var rowDiv = document.createElement('div');
+	//设置div的样式
+	rowDiv.className = 'row';
+//	debugger;//添加断点调试，程序执行到这儿，
+//	会自动停止,直到你点击下一步,才会继续执行
+	//将行div添加到wrap里
+	snakeMap.appendChild(rowDiv);
+	//创建一个一维数组，用来存储一行中每个小方块div
+	var rowArr = [];
+	for (var j = 0;j < colNumber;j++) {
+//		debugger;
+		//创建每一行中存在的方格
+		 var colDiv = document.createElement('div');
+		 //设置css样式
+		 colDiv.className = 'col';
+		 //添加到行里
+		rowDiv.appendChild(colDiv);
+		//将小方块添加到行数组里
+		rowArr.push(colDiv);
+	}
+	//最后将行数组存储到二维数组里
+	divsSnake.push(rowArr);
+}
+//创建🐍
+//创建一个一维数组，用来存储蛇身所占的div
+var snakeBody = [];
+for (var i = 0;i < 3;i++) {
+	//设置不同的颜色  方块
+	divsSnake[0][i].className = 'col activeSnake';
+	//记录蛇身所占的div
+//	snakeBody.push(divsSnake[0][i]);
+   snakeBody[i] = divsSnake[0][i];
+}
+var x = 2;
+var y = 0;//存储蛇头的位置
+var scoreCount = 0;//记录分数
+var foodY = 0;//存储食物所在行的位置
+var foodX = 0;//存储食物所在列的位置
+var direction = 'right';//存储蛇移动的方向
+var changeDir = true;//设置点击按键是否改变方向
+var timerDelay;//设置一个延迟定时器对象
+//通过键盘上下左右键，控制蛇移动的方向
+document.onkeydown = function  (e) {
+//	if (changeDir == false) {
+//		return;//终止事件的执行
+//	}
+//判断条件中,changeDir 等价于  changeDir == true
+//       !changeDir 等价于  changeDir == false
+if (!changeDir) {
+		return;//终止事件的执行
+	}
+	var event = e || window.event;
+	//判断几个特殊情况，为了合理性（蛇头，蛇身）
+	//蛇向右移动，而且点击左按键，则不做任何操作
+	if (direction == 'right' && event.keyCode == 37) {
+		return;//终止函数的执行
+	} else if(direction == 'left' && event.keyCode == 39){
+		return;
+	}else if(direction == 'top' && event.keyCode == 40){
+		return;
+	}else if(direction == 'bottom' && event.keyCode == 38){
+		return;
+	}
+	switch (event.keyCode){
+		case 37:{//左
+			direction = 'left';
+			break;
+		}
+		case 38:{//上
+			direction = 'top';
+			break;
+		}
+		case 39:{//右
+			direction = 'right';
+			break;
+		}
+		case 40:{//下
+			direction = 'bottom';
+			break;
+		}
+		default:
+			break;
+	}
+	//为了避免快速多次的点击方向按键（修改方向）
+	//防止出现bug
+	changeDir = false;
+  timerDelay = setTimeout(function  () {
+		changeDir = true;
+	},300);
+}
+//蛇的移动
+ var timerMove = setInterval(function  () {
+//	//关闭延迟器
+//	clearTimeout(timerDelay);
+////	为了防止下次点击按键触发事件
+//  changeDir = true;
+//判断方向,设置蛇头的位置
+switch (direction){
+	case "left":{
+		x--;
+		break;
+	}
+	case "right":{
+		x++;
+		break;
+	}
+	case "top":{
+		y--;
+		break;
+	}
+	case "bottom":{
+		y++;
+		break;
+	}
+	default:
+		break;
+}
+//判断是否game over （超出范围）
+if (x < 0 || y < 0 || x >= colNumber || y >= rowNumber) {
+	alert('game over');
+	//关闭蛇移动的定时器
+	clearInterval(timerMove);
+	return;//终止函数的执行
+}
+//判断蛇如果在吃自己，则game over
+for (var i = 0;i < snakeBody.length;i++) {
+	//将此时移动之后的蛇头位置和在此
+//	之前的所有蛇身所在的div比较,如果相同,则说明
+//	吃到蛇身
+    if (snakeBody[i] == divsSnake[y][x]) {
+    	alert('game over！');
+    	//关闭蛇移动的定时器
+	clearInterval(timerMove);
+    	return;
+    }
+}
+//判断蛇头移动的位置是否是食物
+if (foodY == y && foodX == x) {
+	
+	divsSnake[foodY][foodX].className = 'col activeSnake';
+	scoreCount++;
+	//显示所得分数
+	score.innerHTML = scoreCount;
+	//添加蛇头（蛇身长度+一格）
+	snakeBody.push(divsSnake[foodY][foodX]);
+	//重新随机食物
+	ranFood();
+	//蛇头碰到食物的情况
+//	alert('碰到食物！');
+    //设置分数加1
+} else{
+	//蛇头碰不到食物的情况
+	//去掉蛇尾颜色
+	snakeBody[0].className = 'col';
+	//去掉蛇尾div
+	//删除数组里的第一个元素
+	snakeBody.shift();
+//	unshitf() 添加到数组里的第一个元素位置
+//	pop()  删除数组里的最后一个元素
+//	push() 添加到数组里最后一个元素
+//设置新的蛇头位置以及div
+//设置蛇头所在的div颜色
+divsSnake[y][x].className = 'col activeSnake';
+//添加新的蛇头到数组里
+snakeBody.push(divsSnake[y][x]);
+	
+}
+
+
+
+},300);
+//随机数[min,max]
+function randomNumber (min,max) {
+return Math.floor(Math.random() * (max - min + 1) + min);
+}
+//随机事物的位置
+function ranFood () {
+	//随机行的位置下标
+  foodY = randomNumber(0,rowNumber - 1);
+  //随机列的位置下标
+  foodX = randomNumber(0,colNumber - 1);
+  //如果随机出来的食物位置在蛇身上，则继续随机食物
+  if (divsSnake[foodY][foodX].className == 'col activeSnake') {
+  	ranFood();//继续随机食物
+  } else{
+  	//将随机出的食物设置颜色
+  divsSnake[foodY][foodX].className = 'food col';
+  }
+}
+//随机出食物
+ranFood();
+
+touch.on(document, 'touchstart', function(ev){
+	//禁止系统自带的触摸事件
+	ev.preventDefault();
+});
+//处理触摸事件
+touch.on(document, 'swiperight swipeleft swipeup swipedown', function(ev){
+	var event = ev || window.event;
+	//处理特殊情况
+	if (direction == 'left' && event.type == 'swiperight') {
+		return;
+	}else if (direction == 'right' && event.type == 'swipeleft') {
+		return;
+	}else if (direction == 'top' && event.type == 'swipedown') {
+		return;
+	}else if (direction == 'bottom' && event.type == 'swipeup') {
+		return;
+	}
+	//正常通过轻扫方向去修改移动的方向
+	switch (event.type){
+		case "swipeup":{
+			direction = "top";
+			break;
+		}
+		case "swipedown":{
+			direction = "bottom";
+			break;
+		}
+		case "swipeleft":{
+			direction = "left";
+			break;
+		}
+		case "swiperight":{
+			direction = "right";
+			break;
+		}
+			
+		default:
+			break;
+	}
+	
+	
+});
+
+		
+		
+		
+	</script>
+</html>
